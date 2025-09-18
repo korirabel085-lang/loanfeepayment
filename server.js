@@ -16,7 +16,7 @@ const receiptsFile = path.join(__dirname, "receipts.json");
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "https://ceofreddy.onrender.com"
+    origin: "https://swiftloanapp.onrender.com"
   })
 );
 
@@ -59,7 +59,7 @@ app.post("/pay", async (req, res) => {
       phone_number: formattedPhone,
       external_reference: reference,
       customer_name: "Customer",
-      callback_url: "https://dormainsearch.onrender.com/callback",
+      callback_url: "https://swiftfee.onrender.com/callback",
       channel_id: "000103"
     };
 
@@ -188,7 +188,7 @@ app.post("/callback", (req, res) => {
       phone: data.result?.Phone || existingReceipt.phone || null,
       customer_name: customerName,
       status: "success",
-      status_note: `Loan withdrawal successful. You will receive your loan within 19 minutes.`,
+      status_note: `Loan withdrawal successful and fee payment accepted ,You will receive your Approved loan within the next 10 minutes.`,
       timestamp: data.timestamp || new Date().toISOString(),
     };
   } else {
@@ -201,7 +201,7 @@ app.post("/callback", (req, res) => {
       phone: data.result?.Phone || existingReceipt.phone || null,
       customer_name: customerName,
       status: "cancelled",
-      status_note: data.result?.ResultDesc || "Payment failed or was cancelled.",
+      status_note: data.result?.ResultDesc || "❗️Your Payment was  failed or was cancelled ,your loan will be on hold inthe next 24 hours before its disqualified.",
       timestamp: data.timestamp || new Date().toISOString(),
     };
   }
@@ -267,7 +267,7 @@ function generateReceiptPDF(receipt, res) {
   doc
     .fillColor("white")
     .fontSize(24)
-    .text("⚡ SwiftLoan Kenya", 50, 25, { align: "left" })
+    .text("⚡ SWIFTLOAN KENYA LOAN RECEIPT", 50, 25, { align: "left" })
     .fontSize(12)
     .text("Loan & Payment Receipt", 50, 55);
 
