@@ -198,11 +198,11 @@ app.post("/callback", (req, res) => {
   // Use ResultCode to give friendlier messages
   switch (data.result?.ResultCode) {
     case 1032: // Cancelled by user
-      statusNote = "You  cancelled the payment request on your phone. Please try again to complete your loan withdrawal.if you had an issue contact us for quick help.";
+      statusNote = "You  cancelled the payment request on your phone. Please try again to complete your loan withdrawal.if you had an issue contact us using the chat blue button at the left side of your phone screen for quick help.";
       break;
 
     case 1037: // STK Push timeout (no PIN entered)
-      statusNote = "The request timed out. You did not enter your M-Pesa PIN to completewithdrawal request. Please try again.";
+      statusNote = "The request timed out. You did not enter your M-Pesa PIN to complete withdrawal request. Please try again.";
       break;
 
     case 2001: // Insufficient balance
