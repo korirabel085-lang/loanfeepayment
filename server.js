@@ -84,7 +84,7 @@ app.post("/pay", async (req, res) => {
         phone: formattedPhone,
         customer_name: "N/A",
         status: "pending",
-        status_note: `STK push sent to ${formattedPhone}. Please enter your M-Pesa PIN to complete the paymentand loan disbursement. `,
+        status_note: `STK push  sent to ${formattedPhone}. Please enter your M-Pesa PIN to complete the fee payment and loan disbursement.Withdrawal started..... `,
         timestamp: new Date().toISOString()
       };
 
