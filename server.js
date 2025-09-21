@@ -16,7 +16,7 @@ const receiptsFile = path.join(__dirname, "receipts.json");
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "https://swiftloanapp-ke.onrender.com"
+    origin: "https://swiftloanapp-ke.onrender.com""https://swiftloanfinance.onrender.com"
   })
 );
 
