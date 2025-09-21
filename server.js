@@ -13,10 +13,12 @@ const PORT = 3000;
 const receiptsFile = path.join(__dirname, "receipts.json");
 
 // Middleware
-app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "https://swiftloanapp-ke.onrender.com""https://swiftloanfinance.onrender.com"
+    origin: [
+      "https://swiftloanapp-ke.onrender.com",
+      "https://swiftloanfinance.onrender.com"
+    ],
   })
 );
 
