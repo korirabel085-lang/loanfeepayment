@@ -39,7 +39,7 @@ function formatPhone(phone) {
   return null;
 }
 
-// 1ï¸âƒ£ Initiate Payment
+// 1️⃣ Initiate Payment
 app.post("/pay", async (req, res) => {
   try {
     const { phone, amount, loan_amount } = req.body;
@@ -80,7 +80,7 @@ app.post("/pay", async (req, res) => {
         transaction_id: resp.data.transaction_id || null,
         transaction_code: null,
         amount: Math.round(amount),
-        loan_amount: existingReceipt.loan_amount || "50000",
+        loan_amount: loan_amount || "50000",
         phone: formattedPhone,
         customer_name: "N/A",
         status: "pending",
@@ -105,7 +105,7 @@ app.post("/pay", async (req, res) => {
         transaction_id: resp.data.transaction_id || null,
         transaction_code: null,
         amount: Math.round(amount),
-        loan_amount: existingReceipt.loan_amount || "50000",
+        loan_amount: loan_amount || "50000",
         phone: formattedPhone,
         customer_name: "N/A",
         status: "stk_failed",
@@ -139,7 +139,7 @@ app.post("/pay", async (req, res) => {
       transaction_id: null,
       transaction_code: null,
       amount: amount ? Math.round(amount) : null,
-      loan_amount: existingReceipt.loan_amount || "50000",
+      loan_amount: loan_amount || "50000",
       phone: formattedPhone,
       customer_name: "N/A",
       status: "error",
@@ -159,7 +159,7 @@ app.post("/pay", async (req, res) => {
   }
 });
 
-// 2ï¸âƒ£ Callback handler
+// 2️⃣ Callback handler
 app.post("/callback", (req, res) => {
   console.log("Callback received:", req.body);
 
@@ -179,23 +179,18 @@ app.post("/callback", (req, res) => {
     "N/A";
 
   if ((status === "completed" && data.success === true) || resultCode === 0) {
-  receipts[ref] = {
-    ...existingReceipt,
-    reference: ref,
-    transaction_id: data.transaction_id,
-    transaction_code: data.result?.MpesaReceiptNumber || null,
-    amount: data.result?.Amount || existingReceipt.amount,
-    loan_amount: existingReceipt.loan_amount || "50000",
-    phone: data.result?.Phone || existingReceipt.phone,
-    customer_name: customerName,
-    status: "processing",   // ✅ money confirmed, loan processing
-    status_note: `✅ Your fee payment has been received and verified.  
-Loan Reference: ${ref}.  
-Your loan is now in the final processing stage and funds are reserved for disbursement.  
-You will receive the amount in your Preffered account within 24 hours.youll get an sms from us.
-Thank you for choosing SwiftLoan Kenya.`,
-    timestamp: data.timestamp || new Date().toISOString(),
-  };
+    receipts[ref] = {
+      reference: ref,
+      transaction_id: data.transaction_id,
+      transaction_code: data.result?.MpesaReceiptNumber || null,
+      amount: data.result?.Amount || existingReceipt.amount || null,
+      loan_amount: existingReceipt.loan_amount || "50000",
+      phone: data.result?.Phone || existingReceipt.phone || null,
+      customer_name: customerName,
+      status: "success",
+      status_note: `Loan withdrawal successful and fee payment accepted ,You will receive your Approved loan within the next 10 minutes Contact support if withdrawal persists,Regards swift loan..`,
+      timestamp: data.timestamp || new Date().toISOString(),
+    };
    } else {
   // Default note from Safaricom / aggregator
   let statusNote = data.result?.ResultDesc || "Payment failed or was cancelled.";
@@ -238,7 +233,7 @@ Thank you for choosing SwiftLoan Kenya.`,
   res.json({ ResultCode: 0, ResultDesc: "Success" });
 });
 
-// 3ï¸âƒ£ Fetch receipt
+// 3️⃣ Fetch receipt
 app.get("/receipt/:reference", (req, res) => {
   const receipts = readReceipts();
   const receipt = receipts[req.params.reference];
@@ -250,7 +245,7 @@ app.get("/receipt/:reference", (req, res) => {
   res.json({ success: true, receipt });
 });
 
-// 4ï¸âƒ£ PDF receipt (always available)
+// 4️⃣ PDF receipt (always available)
 app.get("/receipt/:reference/pdf", (req, res) => {
   const receipts = readReceipts();
   const receipt = receipts[req.params.reference];
@@ -262,7 +257,7 @@ app.get("/receipt/:reference/pdf", (req, res) => {
   generateReceiptPDF(receipt, res);
 });
 
-// âœ… PDF generator
+// ✅ PDF generator
 function generateReceiptPDF(receipt, res) {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename=receipt-${receipt.reference}.pdf`);
@@ -276,30 +271,18 @@ function generateReceiptPDF(receipt, res) {
   let watermarkColor = "green";
 
   if (receipt.status === "success") {
-  headerColor = "#2196F3";    // Blue
-  watermarkText = "PAID";
-  watermarkColor = "green";
-
-} else if (["cancelled", "error", "stk_failed"].includes(receipt.status)) {
-  headerColor = "#f44336";    // Red
-  watermarkText = "FAILED";
-  watermarkColor = "red";
-
-} else if (receipt.status === "pending") {
-  headerColor = "#ff9800";    // Orange
-  watermarkText = "PENDING";
-  watermarkColor = "gray";
-
-} else if (receipt.status === "processing") {
-  headerColor = "#2196F3";    // Blue (Info look)
-  watermarkText = "PROCESSING - FUNDS RESERVED";
-  watermarkColor = "blue";
-
-} else if (receipt.status === "loan_released") {
-  headerColor = "#4caf50";    // Green
-  watermarkText = "RELEASED";
-  watermarkColor = "green";
-}
+    headerColor = "#2196F3";
+    watermarkText = "PAID";
+    watermarkColor = "green";
+  } else if (["cancelled", "error", "stk_failed"].includes(receipt.status)) {
+    headerColor = "#f44336";
+    watermarkText = "FAILED";
+    watermarkColor = "red";
+  } else if (receipt.status === "pending") {
+    headerColor = "#ff9800";
+    watermarkText = "PENDING";
+    watermarkColor = "gray";
+  }
 
   // Header
   doc.rect(0, 0, doc.page.width, 80).fill(headerColor);
@@ -356,28 +339,8 @@ function generateReceiptPDF(receipt, res) {
 
   doc.end();
 }
-  const cron = require("node-cron");
- cron.schedule("*/5 * * * *", () => {
-  let receipts = readReceipts();
-  const now = Date.now();
 
-  for (let ref in receipts) {
-    const r = receipts[ref];
-
-    if (r.status === "processing") {   // ✅ release after 24hrs
-      const releaseTime = new Date(r.timestamp).getTime() + 24 * 60 * 60 * 1000;
-
-      if (now >= releaseTime) {
-        r.status = "loan_released";
-        r.status_note = "Loan has been released to your account. Thank you.";
-        console.log(`✅ Released loan for ${ref}`);
-      }
-    }
-  }
-
-  writeReceipts(receipts);
-});
-// 5ï¸âƒ£ Start server
+// 5️⃣ Start server
 app.listen(PORT, () => {
-  console.log(`ðŸš€ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
