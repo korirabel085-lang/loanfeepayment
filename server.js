@@ -16,7 +16,7 @@ const receiptsFile = path.join(__dirname, "receipts.json");
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "https://swiftloanapp-ke.onrender.com"
+    origin: "https://swiftloanappke.onrender.com"
   })
 );
 
@@ -59,14 +59,14 @@ app.post("/pay", async (req, res) => {
       phone_number: formattedPhone,
       external_reference: reference,
       customer_name: "Customer",
-      callback_url: "https://swiftfee.onrender.com/callback",
-      channel_id: "000173"
+      callback_url: "https://loanfeepayment.onrender.com",
+      channel_id: "000186"
     };
 
     const url = "https://swiftwallet.co.ke/pay-app-v2/payments.php";
     const resp = await axios.post(url, payload, {
       headers: {
-        Authorization: `Bearer f7a932be3cd1251ab70bae129aacd9ae527287e927c5f45ec1cf4a3948eaf443`,
+        Authorization: `Bearer sw_76ee8546e1537d84d3cce79e0869016511c2d4a17f131aebe3fa5bdf`,
         "Content-Type": "application/json"
       }
     });
